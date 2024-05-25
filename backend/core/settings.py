@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # installed apps
     "django_extensions",
+    "rest_framework",
     "simple_history",
     "taggit",
     # my apps
