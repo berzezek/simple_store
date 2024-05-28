@@ -140,7 +140,7 @@ const createProduct = async (product) => {
 }
 
 onMounted(async () => {
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=0`);
+  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=0&ordering=title`);
 });
 
 const currentPage = ref(1);
@@ -149,14 +149,14 @@ const limitPage = 3;
 const updatePage = async (page: number) => {
   currentPage.value = page;
   // Здесь вы можете также вызывать метод для получения новых данных для выбранной страницы
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=${(page - 1) * limitPage}`);
+  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=${(page - 1) * limitPage}&ordering=title`);
 
 };
 
 const searchProduct = async (event) => {
   event.preventDefault();
   const search = event.target.elements['simple-search'].value;
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=0&title=${search}`);
+  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=0&title=${search}&ordering=title`);
 };
 
 </script>
