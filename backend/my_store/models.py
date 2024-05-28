@@ -10,6 +10,12 @@ class Product(models.Model):
     description = models.TextField(null=True, blank=True)
     tags = TaggableManager()
 
+    def get_last_price(self):
+        last_transaction = self.transactions.last()
+        if last_transaction:
+            return last_transaction.price
+        return 0
+
 
 class Transaction(models.Model):
     product = models.ForeignKey(

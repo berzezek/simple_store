@@ -7,7 +7,9 @@
     <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-32 md:h-64">Today cash</div>
     <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-32 md:h-64">Total debit</div>
   </div>
-  <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-96 mb-4">Product list[:5]</div>
+  <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 mb-4">
+    <blocks-tables-product-list />
+  </div>
   <div class="grid grid-cols-2 gap-4 mb-4">
     <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
     <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
@@ -22,3 +24,7 @@
     <div class="border-2 border-dashed rounded-lg border-gray-300 dark:border-gray-600 h-48 md:h-72"></div>
   </div>
 </template>
+
+<script setup lang="ts">
+
+</script>
