@@ -30,6 +30,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "django_filters",
     "djoser",
+    "drf_yasg",
     "rest_framework",
     "rest_framework.authtoken",
     "simple_history",

@@ -8,8 +8,8 @@
       <span class="font-semibold text-gray-900 dark:text-white">{{ items.count }}</span>
     </span>
     <ul class="inline-flex items-stretch -space-x-px">
-      <li>
-        <a href="#" @click.prevent="changePage(currentPage - 1)"
+      <li v-if="items.previous">
+        <a href="#" @click="prevPage"
           class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
           :class="{ 'cursor-not-allowed': currentPage === 1 }">
           <span class="sr-only">Previous</span>
@@ -27,8 +27,8 @@
           :class="{ 'bg-gray-100 dark:bg-gray-700': page === currentPage }">
           {{ page }}</a>
       </li>
-      <li>
-        <a href="#" @click.prevent="changePage(currentPage + 1)"
+      <li v-if="items.next">
+        <a href="#" @click="nextPage"
           class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
           :class="{ 'cursor-not-allowed': currentPage === pageCount }">
           <span class="sr-only">Next</span>
@@ -46,11 +46,13 @@
 
 <script setup lang="ts">
 import { computed } from 'vue';
+import type { IProduct, ItemsList } from '~/types/myStore';
 
 const props = defineProps({
   items: {
-    type: Object,
-    required: true,
+    type: Object as () => ItemsList<IProduct>,
+    required: false,
+    default: () => ({ count: 0, next: null, previous: null, results: [] }),
   },
   currentPage: {
     type: Number,
@@ -62,7 +64,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['update:currentPage']);
+const emit = defineEmits(['update:currentPage', 'nextPage', 'prevPage']);
 
 const pageCount = computed(() => {
   const count = Math.ceil(props.items.count / props.limitPage);
@@ -80,5 +82,13 @@ const endItem = computed(() => {
 const changePage = (page: number) => {
   if (page < 1 || page > pageCount.value) return;
   emit('update:currentPage', page);
+};
+
+const nextPage = async () => {
+  emit('nextPage', props.items.next);
+};
+
+const prevPage = async () => {
+  emit('prevPage', props.items.previous);
 };
 </script>

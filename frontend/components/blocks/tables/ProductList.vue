@@ -35,7 +35,7 @@
               Add product
             </button>
             <div class="flex items-center space-x-3 w-full md:w-auto">
-              <button id="filterDropdownButton" data-dropdown-toggle="filterDropdown"
+              <button id="filterDropdownButton" @click="toggleDropdown"
                 class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
                 type="button">
                 <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 mr-2 text-gray-400"
@@ -51,7 +51,8 @@
                     d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
                 </svg>
               </button>
-              <div id="filterDropdown" class="z-10 hidden w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
+              <div id="filterDropdown" v-show="isDropdownOpen"
+                class="z-10 w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
                 <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose brand</h6>
                 <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
                   <li class="flex items-center">
@@ -77,13 +78,13 @@
               </tr>
             </thead>
             <tbody>
-              <tr class="border-b dark:border-gray-700" v-for="product in products.results" :key="product.id">
+              <tr class="border-b dark:border-gray-700" v-for="product in products?.results" :key="product.id">
                 <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{
                   product.title }}
                 </th>
                 <td class="px-4 py-3">{{ product.get_last_price }}</td>
                 <td class="px-4 py-3 flex items-center justify-end">
-                  <button id="apple-imac-27-dropdown-button" data-dropdown-toggle="apple-imac-27-dropdown"
+                  <button :id="`${product.title}-dropdown-button`" @click="toggleProductDropdown(product.id)"
                     class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
                     type="button">
                     <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
@@ -92,12 +93,12 @@
                         d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
                     </svg>
                   </button>
-                  <div id="apple-imac-27-dropdown"
-                    class="hidden z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
+                  <div :id="`${product.title}-dropdown`" v-show="isProductDropdownOpen(product.id)"
+                    class="z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
                     <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                      aria-labelledby="apple-imac-27-dropdown-button">
+                      :aria-labelledby="`${product.title}-dropdown-button`">
                       <li>
-                        <a href="#"
+                        <a @click="productDetail(product.id)"
                           class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
                       </li>
                       <li>
@@ -106,8 +107,10 @@
                       </li>
                     </ul>
                     <div class="py-1">
-                      <a href="#"
-                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a>
+                      <!-- <a @click="deleteProduct(product.id)"
+                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a> -->
+
+                      <blocks-forms-delete-product />
                     </div>
                   </div>
                 </td>
@@ -115,48 +118,84 @@
             </tbody>
           </table>
           <blocks-forms-create-product @createProduct="createProduct" />
+          <blocks-cards-product :item="product" v-if="showProduct" />
         </div>
         <blocks-tables-pagination :items="products" :currentPage="currentPage" @update:currentPage="updatePage"
-          :limitPage="limitPage" />
-
+          @nextPage="nextPage" @prevPage="prevPage" :limitPage="limitPage" />
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue';
 import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useMyStore } from '~/stores/myStore';
+import type { IProduct } from '~/types/myStore';
 
 const { $baseApiUrl } = useNuxtApp();
+const baseApiUrl = $baseApiUrl as string;
 const myStore = useMyStore();
-const { getProducts, setProduct } = myStore;
-const { products } = storeToRefs(myStore);
+const { getProducts, setProduct, getProduct, removeProduct } = myStore;
+const { products, product } = storeToRefs(myStore);
 
-const createProduct = async (product) => {
-  await setProduct(product, $baseApiUrl);
-  document.getElementById('defaultModalButton').click();
+const currentPage = ref(1);
+const limitPage = ref(3);
+const showProduct = ref(false);
+
+
+const createProduct = async (product: IProduct) => {
+  await setProduct(product, baseApiUrl);
+  document.getElementById('defaultModalButton')?.click();
+  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
 }
 
 onMounted(async () => {
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=0&ordering=title`);
+  await getProducts(`${baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
 });
 
-const currentPage = ref(1);
-const limitPage = 3;
 
 const updatePage = async (page: number) => {
   currentPage.value = page;
-  // Здесь вы можете также вызывать метод для получения новых данных для выбранной страницы
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=${(page - 1) * limitPage}&ordering=title`);
-
+  await getProducts(`${baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=${(page - 1) * limitPage.value}&ordering=title`);
 };
 
-const searchProduct = async (event) => {
+const searchProduct = async (event: any) => {
   event.preventDefault();
   const search = event.target.elements['simple-search'].value;
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage}&offset=0&title=${search}&ordering=title`);
+  await getProducts(`${baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&title=${search}`);
 };
 
+const isDropdownOpen = ref(false);
+const toggleDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+const productDropdowns = ref<{ [key: string]: boolean }>({});
+const toggleProductDropdown = (productId: number | string) => {
+  productDropdowns.value[productId] = !productDropdowns.value[productId];
+};
+const isProductDropdownOpen = (productId: number | string) => {
+  return productDropdowns.value[productId];
+};
+
+const productDetail = async (productId: number | string) => {
+  await getProduct(productId, baseApiUrl);
+  showProduct.value = true;
+};
+
+const deleteProduct = async (productId: number | string) => {
+  await removeProduct(productId, baseApiUrl);
+  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
+};
+
+
+const nextPage = async (url: string) => {
+  await getProducts(url);
+};
+
+const prevPage = async (url: string) => {
+  await getProducts(url);
+};
 </script>
