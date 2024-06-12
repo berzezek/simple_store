@@ -1,6 +1,6 @@
 <template>
-  <section class="bg-gray-50 dark:bg-gray-900 p-3 sm:p-5">
-    <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
+  <section class="bg-gray-50 dark:bg-gray-900">
+    <div class="mx-auto">
       <!-- Start coding here -->
       <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
         <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
@@ -16,7 +16,7 @@
                       clip-rule="evenodd" />
                   </svg>
                 </div>
-                <input type="text" id="simple-search"
+                <input type="text" id="simple-search" v-model="searchTitle"
                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                   placeholder="Search">
               </div>
@@ -24,8 +24,7 @@
           </div>
           <div
             class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-            <button type="button" id="defaultModalButton" data-modal-target="defaultModal"
-              data-modal-toggle="defaultModal"
+            <button type="button" @click="showForm = !showForm"
               class="flex items-center justify-center text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
               <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true">
@@ -34,36 +33,6 @@
               </svg>
               Add product
             </button>
-            <div class="flex items-center space-x-3 w-full md:w-auto">
-              <button id="filterDropdownButton" @click="toggleDropdown"
-                class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"
-                type="button">
-                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 mr-2 text-gray-400"
-                  viewbox="0 0 20 20" fill="currentColor">
-                  <path fill-rule="evenodd"
-                    d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z"
-                    clip-rule="evenodd" />
-                </svg>
-                Filter
-                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20"
-                  xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path clip-rule="evenodd" fill-rule="evenodd"
-                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                </svg>
-              </button>
-              <div id="filterDropdown" v-show="isDropdownOpen"
-                class="z-10 w-48 p-3 bg-white rounded-lg shadow dark:bg-gray-700">
-                <h6 class="mb-3 text-sm font-medium text-gray-900 dark:text-white">Choose brand</h6>
-                <ul class="space-y-2 text-sm" aria-labelledby="filterDropdownButton">
-                  <li class="flex items-center">
-                    <input id="apple" type="checkbox" value=""
-                      class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-700 focus:ring-2 dark:bg-gray-600 dark:border-gray-500">
-                    <label for="apple" class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-100">Apple
-                      (56)</label>
-                  </li>
-                </ul>
-              </div>
-            </div>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -78,47 +47,48 @@
               </tr>
             </thead>
             <tbody>
+              <tr v-if="showProduct">
+                <blocks-cards-product :item="product" />
+              </tr>
               <tr class="border-b dark:border-gray-700" v-for="product in products?.results" :key="product.id">
                 <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{
                   product.title }}
                 </th>
                 <td class="px-4 py-3">{{ product.get_last_price }}</td>
-                <td class="px-4 py-3 flex items-center justify-end">
-                  <button :id="`${product.title}-dropdown-button`" @click="toggleProductDropdown(product.id)"
-                    class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none dark:text-gray-400 dark:hover:text-gray-100"
-                    type="button">
-                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20"
-                      xmlns="http://www.w3.org/2000/svg">
-                      <path
-                        d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
-                    </svg>
-                  </button>
-                  <div :id="`${product.title}-dropdown`" v-show="isProductDropdownOpen(product.id)"
-                    class="z-10 w-44 bg-white rounded divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600">
-                    <ul class="py-1 text-sm text-gray-700 dark:text-gray-200"
-                      :aria-labelledby="`${product.title}-dropdown-button`">
-                      <li>
-                        <a @click="productDetail(product.id)"
-                          class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Show</a>
-                      </li>
-                      <li>
-                        <a href="#"
-                          class="block py-2 px-4 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Edit</a>
-                      </li>
-                    </ul>
-                    <div class="py-1">
-                      <!-- <a @click="deleteProduct(product.id)"
-                        class="block py-2 px-4 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white">Delete</a> -->
+                <td class="px-4 py-3 flex items-center">
 
-                      <blocks-forms-delete-product />
-                    </div>
-                  </div>
+                  <p class="hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                    @click="productDetail(product.id)"><svg class="w-[16px] h-[16px] text-gray-400 dark:text-white"
+                      aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+                      viewBox="0 0 24 24">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M11 9h6m-6 3h6m-6 3h6M6.996 9h.01m-.01 3h.01m-.01 3h.01M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z" />
+                    </svg>
+                  </p>
+                  <p class="hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ms-2"
+                    @click="updateProduct(product.id)">
+                    <svg class="w-[16px] h-[16px] text-gray-400 dark:text-blue" aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd"
+                        d="M15.514 3.293a1 1 0 0 0-1.415 0L12.151 5.24a.93.93 0 0 1 .056.052l6.5 6.5a.97.97 0 0 1 .052.056L20.707 9.9a1 1 0 0 0 0-1.415l-5.193-5.193ZM7.004 8.27l3.892-1.46 6.293 6.293-1.46 3.893a1 1 0 0 1-.603.591l-9.494 3.355a1 1 0 0 1-.98-.18l6.452-6.453a1 1 0 0 0-1.414-1.414l-6.453 6.452a1 1 0 0 1-.18-.98l3.355-9.494a1 1 0 0 1 .591-.603Z"
+                        clip-rule="evenodd" />
+                    </svg>
+                  </p>
+                  <p class="hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white ms-2"
+                    @click="deleteProduct(product.id)">
+                    <svg class="w-[16px] h-[16px] text-gray-400 dark:text-warning" aria-hidden="true"
+                      xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M6 18 17.94 6M18 18 6.06 6" />
+                    </svg>
+                  </p>
                 </td>
               </tr>
+
             </tbody>
           </table>
-          <blocks-forms-create-product @createProduct="createProduct" />
-          <blocks-cards-product :item="product" v-if="showProduct" />
+          <blocks-modals-create-product @sendForm="sendForm" :showForm="showForm" @closeModal="closeModal"
+            :item="product" :buttonTitle="buttonTitle" />
         </div>
         <blocks-tables-pagination :items="products" :currentPage="currentPage" @update:currentPage="updatePage"
           @nextPage="nextPage" @prevPage="prevPage" :limitPage="limitPage" />
@@ -137,18 +107,24 @@ import type { IProduct } from '~/types/myStore';
 const { $baseApiUrl } = useNuxtApp();
 const baseApiUrl = $baseApiUrl as string;
 const myStore = useMyStore();
-const { getProducts, setProduct, getProduct, removeProduct } = myStore;
+const { getProducts, setProduct, getProduct, patchProduct, removeProduct } = myStore;
 const { products, product } = storeToRefs(myStore);
 
 const currentPage = ref(1);
 const limitPage = ref(3);
 const showProduct = ref(false);
+const searchTitle = ref('');
+const showForm = ref(false);
+const buttonTitle = ref('Add Product');
 
 
-const createProduct = async (product: IProduct) => {
-  await setProduct(product, baseApiUrl);
-  document.getElementById('defaultModalButton')?.click();
-  await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
+const sendForm = async (action: string, product: IProduct) => {
+  if (action === 'create') {
+    await setProduct(product, baseApiUrl);
+  } else {
+    await patchProduct(product, baseApiUrl);
+  };
+  await getProducts(`${baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
 }
 
 onMounted(async () => {
@@ -182,7 +158,7 @@ const isProductDropdownOpen = (productId: number | string) => {
 
 const productDetail = async (productId: number | string) => {
   await getProduct(productId, baseApiUrl);
-  showProduct.value = true;
+  showProduct.value = !showProduct.value;
 };
 
 const deleteProduct = async (productId: number | string) => {
@@ -190,12 +166,21 @@ const deleteProduct = async (productId: number | string) => {
   await getProducts(`${$baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
 };
 
+const updateProduct = async (productId: number | string) => {
+  await getProduct(productId, baseApiUrl);
+  buttonTitle.value = 'Update Product';
+  showForm.value = !showForm.value;
+};
 
 const nextPage = async (url: string) => {
-  await getProducts(url);
+  await getProducts(`${url}&title=${searchTitle.value}`);
 };
 
 const prevPage = async (url: string) => {
-  await getProducts(url);
+  await getProducts(`${url}&title=${searchTitle.value}`);
+};
+
+const closeModal = () => {
+  showForm.value = !showForm.value;
 };
 </script>

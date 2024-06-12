@@ -2,16 +2,16 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { useFetch } from '#app';
-import type { IProduct, ItemsList } from '~/types/myStore';
+import type { IProduct, ItemsList, IProductBilling } from '~/types/myStore';
 
 
 export const useMyStore = defineStore('myStore', () => {
-  const products = ref<ItemsList<IProduct>>();
+  const products = ref<ItemsList<IProductBilling>>();
   const product = ref<IProduct>();
 
   const getProducts = async (url: string) => {
     try {
-      const data = await $fetch<ItemsList<IProduct>>(url, {
+      const data = await $fetch<ItemsList<IProductBilling>>(url, {
         method: 'GET',
       });
       if (data) {
@@ -46,9 +46,20 @@ export const useMyStore = defineStore('myStore', () => {
     }
   };
 
+  const patchProduct = async (product: IProduct, baseApiUrl: string) => {
+    try {
+      await $fetch<IProduct>(`${baseApiUrl}/api/v1/product/${product.id}/`, {
+        method: 'PATCH',
+        body: JSON.stringify(product),
+      });
+    } catch (error) {
+      console.error('Failed to update product', error);
+    }
+  };
+
   const removeProduct = async (id: number | string, baseApiUrl: string) => {
     try {
-      await useFetch<IProduct>(`${baseApiUrl}/api/v1/product/${id}/`, {
+      await $fetch<IProduct>(`${baseApiUrl}/api/v1/product/${id}/`, {
         method: 'DELETE',
       });
     } catch (error) {
@@ -63,6 +74,7 @@ export const useMyStore = defineStore('myStore', () => {
     getProducts,
     setProduct,
     getProduct,
+    patchProduct,
     removeProduct,
   };
 });

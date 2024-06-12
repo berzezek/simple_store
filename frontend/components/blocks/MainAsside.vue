@@ -79,17 +79,10 @@
             </svg>
           </button>
           <ul id="dropdown-sales" class="hidden py-2 space-y-2">
-            <li>
-              <a href="#"
-                class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Products</a>
-            </li>
-            <li>
-              <a href="#"
-                class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Billing</a>
-            </li>
-            <li>
-              <a href="#"
-                class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">Invoice</a>
+            <li v-for="salePage in salesPages" :key="salePage.title">
+              <router-link :to="salePage.link"
+                class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">{{
+                salePage.title }}</router-link>
             </li>
           </ul>
         </li>
@@ -334,7 +327,13 @@ const pages = [
     title: 'Dashboard',
     link: '/dashboard'
   },
+]
 
+const salesPages = [
+  {
+    title: 'Billing',
+    link: '/billing'
+  }
 ]
 
 const authPages = [

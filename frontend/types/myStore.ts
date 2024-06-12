@@ -4,7 +4,12 @@ export interface IProduct {
   title: string;
   description?: string;
   tags: string[];
-  get_last_price?: number;
+  get_last_price: number;
+}
+
+export interface IProductBilling extends IProduct {
+  total: number;
+  qty: number;
 }
 
 export interface ItemsList<T> {

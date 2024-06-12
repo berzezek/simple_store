@@ -14,7 +14,7 @@ import {
   initDismisses,
   initDrawers,
   initDropdowns,
-  initModals,
+  // initModals,
   initPopovers,
   initTabs,
   initTooltips
@@ -29,7 +29,7 @@ onMounted(() => {
   initDismisses();
   initDrawers();
   initDropdowns();
-  initModals();
+  // initModals();
   initPopovers();
   initTabs();
   initTooltips();

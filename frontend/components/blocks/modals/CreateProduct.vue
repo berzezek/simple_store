@@ -1,16 +1,6 @@
 <template>
-  <!-- Modal toggle -->
-  <!-- <div class="flex justify-center m-5">
-    <button id="defaultModalButton" data-modal-target="defaultModal" data-modal-toggle="defaultModal"
-      class="block text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
-      type="button">
-      Create product
-    </button>
-  </div> -->
-
-  <!-- Main modal -->
-  <div id="defaultModal" tabindex="-1" aria-hidden="true"
-    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
+  <div v-if="showForm"
+    class="overflow-y-auto fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
     <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
       <!-- Modal content -->
       <div class="relative p-4 bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
@@ -19,7 +9,7 @@
           <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
             Add Product
           </h3>
-          <button type="button"
+          <button type="button" @click="closeModal"
             class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
             data-modal-toggle="defaultModal">
             <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
@@ -32,17 +22,17 @@
           </button>
         </div>
         <!-- Modal body -->
-        <form @submit.prevent="createProduct">
+        <form @submit.prevent="sendForm">
           <div class="grid gap-4 mb-4 sm:grid-cols-2">
             <div>
               <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title</label>
-              <input type="text" name="title" id="title" v-model="title"
+              <input type="text" name="title" id="title" v-model="localItem.title"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Type product name" required>
             </div>
             <div>
               <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tags</label>
-              <select id="category" multiple v-model="tags"
+              <select id="category" multiple v-model="localItem.tags"
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 <option value="foo">foo</option>
                 <option value="bar">bar</option>
@@ -51,19 +41,14 @@
             <div class="sm:col-span-2">
               <label for="description"
                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
-              <textarea id="description" rows="4" v-model="description"
+              <textarea id="description" rows="4" v-model="localItem.description"
                 class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Write product description here"></textarea>
             </div>
           </div>
           <button type="submit"
             class="text-white inline-flex items-center bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-            <svg class="mr-1 -ml-1 w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fill-rule="evenodd"
-                d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z"
-                clip-rule="evenodd"></path>
-            </svg>
-            Add new product
+            {{ props.buttonTitle }}
           </button>
         </form>
       </div>
@@ -72,24 +57,46 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import type { IProduct } from '~/types/myStore';
 
-const emit = defineEmits(['createProduct']);
+const emit = defineEmits(['sendForm', 'closeModal']);
 
 const props = defineProps({
-  items: {
+  showForm: {
+    type: Boolean,
+    required: false,
+    default: false,
+  },
+  item: {
     type: Object as () => IProduct,
     required: false,
-    default: () => ({ title: '', description: '', tags: [] }),
-  }
+    default: () => ({ id: null, title: '', description: '', tags: [] }),
+  },
+  buttonTitle: {
+    type: String,
+    required: false,
+    default: 'Add Product',
+  },
 });
 
-const title = ref(props.items.title);
-const description = ref(props.items.description);
-const tags = ref(props.items.tags);
+const localItem = ref({ ...props.item });
 
-const createProduct = () => {
-  emit('createProduct', { title: title.value, description: description.value, tags: tags.value });
+watch(props, (newProps) => {
+  localItem.value = { ...newProps.item };
+});
+
+const sendForm = () => {
+  if (!localItem.value.id) {
+    emit('sendForm', 'create', { ...localItem.value });
+  } else {
+    emit('sendForm', 'update', { ...localItem.value });
+  }
+  closeModal();
 }
+
+const closeModal = () => {
+  emit('closeModal');
+}
+
 </script>
