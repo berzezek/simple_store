@@ -13,6 +13,7 @@ from my_store.api.serializers import (
     OrderSerializer,
     CartSerializer,
 )
+from my_store.api.paginations import ResultsByOnePagination
 
 
 class ProductViewSet(viewsets.ModelViewSet):
@@ -31,16 +32,19 @@ class ProductViewSet(viewsets.ModelViewSet):
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
+    pagination_class = None
 
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
+    pagination_class = ResultsByOnePagination
 
 
 class CartViewSet(viewsets.ModelViewSet):
     queryset = Cart.objects.all()
     serializer_class = CartSerializer
+    pagination_class = ResultsByOnePagination
 
 
 @csrf_exempt

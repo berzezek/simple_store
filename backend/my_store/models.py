@@ -40,7 +40,7 @@ class Transaction(models.Model):
             else:
                 self.price = 0
         super().save(*args, **kwargs)
-    
+
     @classmethod
     def create_with_content_object(cls, product, price, quantity, content_object):
         content_type = ContentType.objects.get_for_model(content_object)
@@ -49,7 +49,7 @@ class Transaction(models.Model):
             price=price,
             quantity=quantity,
             content_type=content_type,
-            object_id=content_object.id
+            object_id=content_object.id,
         )
 
 

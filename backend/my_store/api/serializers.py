@@ -12,9 +12,34 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
+    related_object = serializers.SerializerMethodField()
+    content_type_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Transaction
-        fields = "__all__"
+        fields = [
+            "id",
+            "related_object",
+            "price",
+            "quantity",
+            "object_id",
+            "product",
+            "content_type_name",
+        ]
+
+    def get_related_object(self, obj):
+        try:
+            if obj.content_type.model == "order":
+                related_object = Order.objects.get(id=obj.object_id)
+                return OrderSerializer(related_object).data
+            elif obj.content_type.model == "cart":
+                related_object = Cart.objects.get(id=obj.object_id)
+                return CartSerializer(related_object).data
+        except (Order.DoesNotExist, Cart.DoesNotExist):
+            return None
+
+    def get_content_type_name(self, obj):
+        return obj.content_type.model
 
 
 class OrderSerializer(serializers.ModelSerializer):

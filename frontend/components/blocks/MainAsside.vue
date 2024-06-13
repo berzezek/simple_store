@@ -82,7 +82,7 @@
             <li v-for="salePage in salesPages" :key="salePage.title">
               <router-link :to="salePage.link"
                 class="flex items-center p-2 pl-11 w-full text-base font-medium text-gray-900 rounded-lg transition duration-75 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700">{{
-                salePage.title }}</router-link>
+                  salePage.title }}</router-link>
             </li>
           </ul>
         </li>
@@ -331,8 +331,12 @@ const pages = [
 
 const salesPages = [
   {
-    title: 'Billing',
-    link: '/billing'
+    title: 'Carts',
+    link: '/cart'
+  },
+  {
+    title: 'Orders',
+    link: '/order'
   }
 ]
 

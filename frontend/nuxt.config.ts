@@ -19,8 +19,10 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     baseApiUrl: process.env.API_URL,
+    limitPage: process.env.LIMIT_PAGE,
     public: {
-      baseApiUrl: process.env.API_URL || 'http://localhost:8000'
+      baseApiUrl: process.env.API_URL || 'http://localhost:8000',
+      limitPage: process.env.LIMIT_PAGE || '10',
     },
   },
   plugins: [

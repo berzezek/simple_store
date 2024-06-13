@@ -57,10 +57,12 @@ const props = defineProps({
   currentPage: {
     type: Number,
     required: true,
+    default: 1
   },
   limitPage: {
     type: Number,
-    default: 5,
+    required: false,
+    default: 3,
   }
 });
 
