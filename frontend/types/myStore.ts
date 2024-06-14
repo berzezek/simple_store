@@ -12,6 +12,7 @@ export interface IProduct extends IProductCreate {
 export interface IProductBilling extends IProduct {
   total: number;
   qty: number;
+  price: number;
 }
 
 interface ITransaction {

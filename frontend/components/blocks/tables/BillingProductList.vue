@@ -1,7 +1,6 @@
 <template>
   <section class="bg-gray-50 dark:bg-gray-900">
     <div class="mx-auto">
-      <!-- Start coding here -->
       <div class="bg-white dark:bg-gray-800 relative shadow-md sm:rounded-lg overflow-hidden">
         <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
           <div class="w-full md:w-1/2">
@@ -19,13 +18,6 @@
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                 placeholder="Search">
             </div>
-          </div>
-          <div
-            class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
-            <button type="button"
-              class="flex items-center justify-center text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
-              Add cart
-            </button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -47,28 +39,34 @@
                   <input type="number" v-model.number="product.qty" @input="updateTotal(product)" min="0"
                     class="w-16 p-1 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
                 </td>
-                <td class="px-4 py-3">{{ product.get_last_price }}</td>
-                <td class="px-4 py-3">{{ isNaN(product.qty * product.get_last_price) ? 0 : product.qty *
-                  product.get_last_price }}</td>
-
+                <td class="px-4 py-3">
+                  <input type="number" v-model.number="product.get_last_price" @input="updateTotal(product)" min="0"
+                    class="w-16 p-1 border border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" />
+                </td>
+                <td class="px-4 py-3">
+                  {{ isNaN(product.qty * product.get_last_price) ? 0 : product.qty * product.get_last_price }}
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
         <blocks-tables-pagination :items="products" :currentPage="currentPage" @update:currentPage="updatePage"
           @nextPage="nextPage" @prevPage="prevPage" :limitPage="limitPage" />
-
+        <div>
+          <p class="text-sm text-gray-500 dark:text-gray-400 p-4">Total: {{ totalPrice }}</p>
+        </div>
       </div>
     </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { onMounted } from 'vue';
+// @ts-ignore
+import nuxtStorage from 'nuxt-storage';
+import { ref, onMounted, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useProductStore } from '~/stores/product';
-import type { IProductBilling, ItemsList } from '~/types/myStore';
+import type { IProductBilling } from '~/types/myStore';
 
 const { $baseApiUrl } = useNuxtApp();
 const baseApiUrl = $baseApiUrl as string;
@@ -80,9 +78,9 @@ const currentPage = ref(1);
 const limitPage = ref(3);
 const searchTitle = ref('');
 
-// onMounted(async () => {
-//   await getProducts(`${baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
-// });
+onMounted(async () => {
+  await getProducts(`${baseApiUrl}/api/v1/product/?limit=${limitPage.value}&offset=0&ordering=title`);
+});
 
 const updatePage = async (page: number) => {
   currentPage.value = page;
@@ -103,5 +101,26 @@ const prevPage = async (url: string) => {
 
 const updateTotal = (product: IProductBilling) => {
   product.total = product.qty * product.get_last_price;
+  saveCartToLocalStorage();
+  window.dispatchEvent(new Event('storage'));
+};
+
+const saveCartToLocalStorage = () => {
+  const cart = products.value?.results.filter((product: IProductBilling) => product.qty > 0);
+  nuxtStorage.localStorage.setData('cart', cart);
+};
+
+const totalPrice = computed(() => {
+  return products.value?.results.reduce((sum, product) => sum + (product.qty * product.get_last_price), 0) || 0;
+});
+
+const addCart = () => {
+  const cart = products.value?.results.filter((product: IProductBilling) => product.qty > 0);
+  console.log(cart);
+  if (cart) {
+    cart.forEach((product: IProductBilling) => {
+      console.log(product);
+    });
+  }
 };
 </script>
