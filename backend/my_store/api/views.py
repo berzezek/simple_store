@@ -1,24 +1,22 @@
 from django.views.decorators.csrf import csrf_exempt
-from django.db.models import Sum, F, Max
-from rest_framework import filters
-from rest_framework import viewsets
+from django.db.models import Sum
+from rest_framework import filters, viewsets
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
 
-from my_store.models import Product, Transaction, Order, Cart
+from my_store.api.mixins import TodayHistoryMixin
 from my_store.api.serializers import (
     ProductSerializer,
     TransactionSerializer,
     OrderSerializer,
     CartSerializer,
 )
-from my_store.api.paginations import ResultsByOnePagination
+from my_store.models import Product, Transaction, Order, Cart
 
 
 class ProductViewSet(viewsets.ModelViewSet):
     serializer_class = ProductSerializer
-    # queryset = Product.objects.all()
     filter_backends = [filters.OrderingFilter]
 
     def get_queryset(self):
@@ -32,19 +30,16 @@ class ProductViewSet(viewsets.ModelViewSet):
 class TransactionViewSet(viewsets.ModelViewSet):
     queryset = Transaction.objects.all()
     serializer_class = TransactionSerializer
-    pagination_class = None
 
 
-class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
+class OrderViewSet(TodayHistoryMixin, viewsets.ModelViewSet):
+    model = Order
     serializer_class = OrderSerializer
-    pagination_class = ResultsByOnePagination
 
 
-class CartViewSet(viewsets.ModelViewSet):
-    queryset = Cart.objects.all()
+class CartViewSet(TodayHistoryMixin, viewsets.ModelViewSet):
+    model = Cart
     serializer_class = CartSerializer
-    pagination_class = ResultsByOnePagination
 
 
 @csrf_exempt

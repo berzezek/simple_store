@@ -1,5 +1,7 @@
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 from taggit.serializers import TagListSerializerField, TaggitSerializer
+
 from my_store.models import Product, Transaction, Order, Cart
 
 
@@ -12,43 +14,39 @@ class ProductSerializer(TaggitSerializer, serializers.ModelSerializer):
 
 
 class TransactionSerializer(serializers.ModelSerializer):
-    related_object = serializers.SerializerMethodField()
     content_type_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Transaction
-        fields = [
-            "id",
-            "related_object",
-            "price",
-            "quantity",
-            "object_id",
-            "product",
-            "content_type_name",
-        ]
-
-    def get_related_object(self, obj):
-        try:
-            if obj.content_type.model == "order":
-                related_object = Order.objects.get(id=obj.object_id)
-                return OrderSerializer(related_object).data
-            elif obj.content_type.model == "cart":
-                related_object = Cart.objects.get(id=obj.object_id)
-                return CartSerializer(related_object).data
-        except (Order.DoesNotExist, Cart.DoesNotExist):
-            return None
+        fields = "__all__"
 
     def get_content_type_name(self, obj):
         return obj.content_type.model
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    transactions = serializers.SerializerMethodField()
+
     class Meta:
         model = Order
         fields = "__all__"
 
+    def get_transactions(self, obj):
+        transactions = Transaction.objects.filter(
+            content_type__model="order", object_id=obj.id
+        )
+        return TransactionSerializer(transactions, many=True).data
+
 
 class CartSerializer(serializers.ModelSerializer):
+    transactions = serializers.SerializerMethodField()
+
     class Meta:
         model = Cart
         fields = "__all__"
+
+    def get_transactions(self, obj):
+        transactions = Transaction.objects.filter(
+            content_type__model="cart", object_id=obj.id
+        )
+        return TransactionSerializer(transactions, many=True).data
